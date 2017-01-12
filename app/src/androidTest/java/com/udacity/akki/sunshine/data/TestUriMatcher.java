@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.sunshine.data;
+package com.udacity.akki.sunshine.data;
 
 import android.content.UriMatcher;
 import android.net.Uri;
@@ -26,8 +26,8 @@ import org.junit.runner.RunWith;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static com.example.android.sunshine.data.TestUtilities.getStaticIntegerField;
-import static com.example.android.sunshine.data.TestUtilities.studentReadableNoSuchField;
+import static com.udacity.akki.sunshine.data.TestUtilities.getStaticIntegerField;
+import static com.udacity.akki.sunshine.data.TestUtilities.studentReadableNoSuchField;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 

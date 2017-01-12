@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.sunshine.data;
+package com.udacity.akki.sunshine.data;
 
 import android.content.ContentValues;
 import android.database.ContentObserver;
@@ -22,8 +22,8 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import com.example.android.sunshine.utilities.SunshineDateUtils;
-import com.example.android.sunshine.utils.PollingCheck;
+import com.udacity.akki.sunshine.utilities.SunshineDateUtils;
+import com.udacity.akki.sunshine.utils.PollingCheck;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -32,14 +32,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_DATE;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_DEGREES;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_HUMIDITY;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_MAX_TEMP;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_MIN_TEMP;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_PRESSURE;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_WEATHER_ID;
-import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.COLUMN_WIND_SPEED;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_DATE;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_DEGREES;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_HUMIDITY;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_MAX_TEMP;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_MIN_TEMP;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_PRESSURE;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_WEATHER_ID;
+import static com.udacity.akki.sunshine.data.WeatherContract.WeatherEntry.COLUMN_WIND_SPEED;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
