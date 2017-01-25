@@ -19,6 +19,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.udacity.akki.sunshine.R;
 import com.udacity.akki.sunshine.data.SunshinePreferences;
 
 import java.io.IOException;
@@ -32,6 +33,8 @@ import java.util.Scanner;
  * These utilities will be used to communicate with the weather servers.
  */
 public final class NetworkUtils {
+
+
 
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
@@ -52,7 +55,7 @@ public final class NetworkUtils {
             "https://andfun-weather.udacity.com/weather";
 
     private static final String STATIC_WEATHER_URL =
-            "https://andfun-weather.udacity.com/staticweather";
+            "http://api.openweathermap.org/data/2.5/forecast/daily?";
 
     private static final String FORECAST_BASE_URL = STATIC_WEATHER_URL;
 
@@ -82,10 +85,11 @@ public final class NetworkUtils {
     private static final String UNITS_PARAM = "units";
     /* The days parameter allows us to designate how many days of weather data we want */
     private static final String DAYS_PARAM = "cnt";
+    private static final String APP_ID_PARAM="APPID";
 
     /**
      * Retrieves the proper URL to query for the weather data. The reason for both this method as
-     * well as {@link #buildUrlWithLocationQuery(String)} is two fold.
+     * well as {@link #buildUrlWithLocationQuery(String, String)} is two fold.
      * <p>
      * 1) You should be able to just use one method when you need to create the URL within the
      * app instead of calling both methods.
@@ -98,14 +102,15 @@ public final class NetworkUtils {
      * @return URL to query weather service
      */
     public static URL getUrl(Context context) {
+
         if (SunshinePreferences.isLocationLatLonAvailable(context)) {
             double[] preferredCoordinates = SunshinePreferences.getLocationCoordinates(context);
             double latitude = preferredCoordinates[0];
             double longitude = preferredCoordinates[1];
-            return buildUrlWithLatitudeLongitude(latitude, longitude);
+            return buildUrlWithLatitudeLongitude(latitude, longitude,context.getResources().getString(R.string.api_key));
         } else {
             String locationQuery = SunshinePreferences.getPreferredWeatherLocation(context);
-            return buildUrlWithLocationQuery(locationQuery);
+            return buildUrlWithLocationQuery(locationQuery,context.getResources().getString(R.string.api_key));
         }
     }
 
@@ -115,15 +120,17 @@ public final class NetworkUtils {
      *
      * @param latitude  The latitude of the location
      * @param longitude The longitude of the location
+     * @param string
      * @return The Url to use to query the weather server.
      */
-    private static URL buildUrlWithLatitudeLongitude(Double latitude, Double longitude) {
+    private static URL buildUrlWithLatitudeLongitude(Double latitude, Double longitude, String apiKey) {
         Uri weatherQueryUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                 .appendQueryParameter(LAT_PARAM, String.valueOf(latitude))
                 .appendQueryParameter(LON_PARAM, String.valueOf(longitude))
                 .appendQueryParameter(FORMAT_PARAM, format)
                 .appendQueryParameter(UNITS_PARAM, units)
                 .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                .appendQueryParameter(APP_ID_PARAM,apiKey)
                 .build();
 
         try {
@@ -141,14 +148,16 @@ public final class NetworkUtils {
      * on the query capabilities of the weather provider that we are using.
      *
      * @param locationQuery The location that will be queried for.
+     * @param apiKey
      * @return The URL to use to query the weather server.
      */
-    private static URL buildUrlWithLocationQuery(String locationQuery) {
+    private static URL buildUrlWithLocationQuery(String locationQuery, String apiKey) {
         Uri weatherQueryUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                 .appendQueryParameter(QUERY_PARAM, locationQuery)
                 .appendQueryParameter(FORMAT_PARAM, format)
                 .appendQueryParameter(UNITS_PARAM, units)
                 .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                .appendQueryParameter(APP_ID_PARAM,apiKey)
                 .build();
 
         try {

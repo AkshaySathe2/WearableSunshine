@@ -12,13 +12,24 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
 import com.udacity.akki.sunshine.DetailActivity;
 import com.udacity.akki.sunshine.R;
 import com.udacity.akki.sunshine.data.SunshinePreferences;
 import com.udacity.akki.sunshine.data.WeatherContract;
 
+import java.util.UUID;
+
 public class NotificationUtils {
+
+    public static final String LOG_TAG = NotificationUtils.class.getSimpleName();
 
     /*
      * The columns of data that we are interested in displaying within our notification to let
@@ -45,6 +56,13 @@ public class NotificationUtils {
      * arbitrary and can be set to whatever you like. 3004 is in no way significant.
      */
     private static final int WEATHER_NOTIFICATION_ID = 3004;
+
+    /*This Weather_Info_Path is for sending data to Wearable when updated data*/
+    private static final String WEATHER_INFO_PATH = "/weather-info";
+    private static final String KEY_UUID = "uuid";
+    private static final String KEY_HIGH = "high";
+    private static final String KEY_LOW = "low";
+    private static final String KEY_WEATHER_ID = "weatherId";
 
     /**
      * Constructs and displays a notification for the newly updated weather for today.
@@ -103,7 +121,7 @@ public class NotificationUtils {
              * forecast.
              */
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
-                    .setColor(ContextCompat.getColor(context,R.color.colorPrimary))
+                    .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                     .setSmallIcon(smallArtResourceId)
                     .setLargeIcon(largeIcon)
                     .setContentTitle(notificationTitle)
@@ -129,7 +147,7 @@ public class NotificationUtils {
 
             /* WEATHER_NOTIFICATION_ID allows you to update or cancel the notification later on */
             notificationManager.notify(WEATHER_NOTIFICATION_ID, notificationBuilder.build());
-
+            sendWeatherInfoToWearable(context,high,low,weatherId);
             /*
              * Since we just showed a notification, save the current time. That way, we can check
              * next time the weather is refreshed if we should show another notification.
@@ -140,6 +158,46 @@ public class NotificationUtils {
         /* Always close your cursor when you're done with it to avoid wasting resources. */
         todayWeatherCursor.close();
     }
+
+    private static void sendWeatherInfoToWearable(Context context, double high, double low, int weatherId) {
+        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(context)
+//                    .addConnectionCallbacks(this)
+//                    .addOnConnectionFailedListener(this)
+                        .addApi(Wearable.API)
+                        .build();
+
+        Log.d(LOG_TAG, "Sending Weather data");
+
+        if (mGoogleApiClient == null) {
+            return;
+        }
+
+        mGoogleApiClient.connect();
+
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_INFO_PATH);
+
+        putDataMapRequest.getDataMap().putString(KEY_UUID, UUID.randomUUID().toString());
+        putDataMapRequest.getDataMap().putString(KEY_HIGH, SunshineWeatherUtils.formatTemperature(context, high));
+        putDataMapRequest.getDataMap().putString(KEY_LOW, SunshineWeatherUtils.formatTemperature(context, low));
+        putDataMapRequest.getDataMap().putInt(KEY_WEATHER_ID, weatherId);
+
+        PutDataRequest request = putDataMapRequest.asPutDataRequest();
+
+        Log.d(LOG_TAG, "High:" + high + ", Low:" + low + ", Condition ID: " + weatherId);
+
+        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                        if (!dataItemResult.getStatus().isSuccess()) {
+                            Log.d(LOG_TAG, "Failed to send weather data");
+                        } else {
+                            Log.d(LOG_TAG, "Successfully sent weather data");
+                        }
+                    }
+                });
+    }
+
 
     /**
      * Constructs and returns the summary of a particular day's forecast using various utility
