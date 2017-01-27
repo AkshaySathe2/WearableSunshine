@@ -6,6 +6,7 @@ import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.udacity.akki.sunshine.sync.SunshineSyncAdapter;
+import com.udacity.akki.sunshine.sync.SunshineSyncUtils;
 
 /**
  * Created by 836158 on 24-01-2017.
@@ -24,7 +25,7 @@ public class WearableWeatherService extends WearableListenerService {
                 String path = dataEvent.getDataItem().getUri().getPath();
                 Log.d(TAG, path);
                 if (path.equals(WEATHER_PATH)) {
-                    SunshineSyncAdapter.syncImmediately(this);
+                    SunshineSyncUtils.startImmediateSync(this);
                 }
             }
         }

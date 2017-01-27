@@ -20,6 +20,7 @@ hs_err_pid*
 /build/
 .idea/
 /gradle
+/keystore
 # Ignore Gradle GUI config
 gradle-app.setting
 

@@ -103,7 +103,7 @@ public class SunshineSyncTask {
                 if (notificationsEnabled && oneDayPassedSinceLastNotification) {
                     NotificationUtils.notifyUserOfNewWeather(context);
                 }
-
+                NotificationUtils.sendWeatherInfoToWearable(context);
             /* If the code reaches this point, we have successfully performed our sync */
 
             }

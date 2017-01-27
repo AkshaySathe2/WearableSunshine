@@ -147,7 +147,7 @@ public class NotificationUtils {
 
             /* WEATHER_NOTIFICATION_ID allows you to update or cancel the notification later on */
             notificationManager.notify(WEATHER_NOTIFICATION_ID, notificationBuilder.build());
-            sendWeatherInfoToWearable(context,high,low,weatherId);
+            //sendWeatherInfoToWearable(context,high,low,weatherId);
             /*
              * Since we just showed a notification, save the current time. That way, we can check
              * next time the weather is refreshed if we should show another notification.
@@ -159,43 +159,78 @@ public class NotificationUtils {
         todayWeatherCursor.close();
     }
 
-    private static void sendWeatherInfoToWearable(Context context, double high, double low, int weatherId) {
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(context)
+    public static void sendWeatherInfoToWearable(Context context) {
+
+
+        /* Build the URI for today's weather in order to show up to date data in notification */
+        Uri todaysWeatherUri = WeatherContract.WeatherEntry
+                .buildWeatherUriWithDate(SunshineDateUtils.normalizeDate(System.currentTimeMillis()));
+
+        /*
+         * The MAIN_FORECAST_PROJECTION array passed in as the second parameter is defined in our WeatherContract
+         * class and is used to limit the columns returned in our cursor.
+         */
+        Cursor todayWeatherCursor = context.getContentResolver().query(
+                todaysWeatherUri,
+                WEATHER_NOTIFICATION_PROJECTION,
+                null,
+                null,
+                null);
+
+        /*
+         * If todayWeatherCursor is empty, moveToFirst will return false. If our cursor is not
+         * empty, we want to show the notification.
+         */
+        if (todayWeatherCursor.moveToFirst()) {
+
+            /* Weather ID as returned by API, used to identify the icon to be used */
+            int weatherId = todayWeatherCursor.getInt(INDEX_WEATHER_ID);
+            double high = todayWeatherCursor.getDouble(INDEX_MAX_TEMP);
+            double low = todayWeatherCursor.getDouble(INDEX_MIN_TEMP);
+
+            GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(context)
 //                    .addConnectionCallbacks(this)
 //                    .addOnConnectionFailedListener(this)
-                        .addApi(Wearable.API)
-                        .build();
+                    .addApi(Wearable.API)
+                    .build();
 
-        Log.d(LOG_TAG, "Sending Weather data");
+            Log.d(LOG_TAG, "Sending Weather data");
 
-        if (mGoogleApiClient == null) {
-            return;
+            if (mGoogleApiClient == null) {
+                return;
+            }
+
+            mGoogleApiClient.connect();
+
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_INFO_PATH);
+
+            putDataMapRequest.getDataMap().putString(KEY_UUID, UUID.randomUUID().toString());
+            putDataMapRequest.getDataMap().putString(KEY_HIGH, SunshineWeatherUtils.formatTemperature(context, high));
+            putDataMapRequest.getDataMap().putString(KEY_LOW, SunshineWeatherUtils.formatTemperature(context, low));
+            putDataMapRequest.getDataMap().putInt(KEY_WEATHER_ID, weatherId);
+
+            PutDataRequest request = putDataMapRequest.asPutDataRequest();
+
+            Log.d(LOG_TAG, "High:" + high + ", Low:" + low + ", Condition ID: " + weatherId);
+
+            Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                        @Override
+                        public void onResult(DataApi.DataItemResult dataItemResult) {
+                            if (!dataItemResult.getStatus().isSuccess()) {
+                                Log.d(LOG_TAG, "Failed to send weather data");
+                            } else {
+                                Log.d(LOG_TAG, "Successfully sent weather data");
+                            }
+                        }
+                    });
         }
 
-        mGoogleApiClient.connect();
+        /* Always close your cursor when you're done with it to avoid wasting resources. */
+        todayWeatherCursor.close();
 
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_INFO_PATH);
 
-        putDataMapRequest.getDataMap().putString(KEY_UUID, UUID.randomUUID().toString());
-        putDataMapRequest.getDataMap().putString(KEY_HIGH, SunshineWeatherUtils.formatTemperature(context, high));
-        putDataMapRequest.getDataMap().putString(KEY_LOW, SunshineWeatherUtils.formatTemperature(context, low));
-        putDataMapRequest.getDataMap().putInt(KEY_WEATHER_ID, weatherId);
 
-        PutDataRequest request = putDataMapRequest.asPutDataRequest();
-
-        Log.d(LOG_TAG, "High:" + high + ", Low:" + low + ", Condition ID: " + weatherId);
-
-        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
-                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                    @Override
-                    public void onResult(DataApi.DataItemResult dataItemResult) {
-                        if (!dataItemResult.getStatus().isSuccess()) {
-                            Log.d(LOG_TAG, "Failed to send weather data");
-                        } else {
-                            Log.d(LOG_TAG, "Successfully sent weather data");
-                        }
-                    }
-                });
     }
 
 
