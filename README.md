@@ -1,0 +1,1 @@
+Kindly replace the text with your api key in strings.xml for ID="api_key"
